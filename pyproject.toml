@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "launch"
+version = "23.11.030"
+requires-python = ">=3.12"
+dependencies = [
+    "django==4.2.7",
+    "pytz==2023.3",
+    "huey==2.5.0",
+    "python-dotenv==1.0.0",
+    "requests==2.31.0",
+    "whitenoise==6.6.0",
+    "gunicorn==21.2.0",
+    "dj-database-url==2.1.0",
+    "redis==5.0.1",
+    "sentry_sdk==1.32.0",
+    "pillow==10.1.0",
+    "django-crispy-forms==2.1",
+    "crispy-bootstrap5==2023.10",
+]
+
+[project.scripts]
+"manage.py" = "manage.py:main"
+
+[project.optional-dependencies]
+dev = [
+    "pip-tools",
+    "black",
+    "coverage",
+]
+
+[tool.setuptools]
+packages = [
+    "launch",
+]
+include-package-data = true
+
+[tool.black]
+target-version = ["py312"]
+line-length = 150
+
+[tool.isort]
+profile = "black"
+
+[tool.coverage.run]
+omit = [
+    "*/migrations/*.py",
+    "manage.py",
+    "*/__init__.py",
+]

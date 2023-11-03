@@ -1,0 +1,88 @@
+{% extends "launch/base.html" %}
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8" />
+        <title>Launch</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="The ergonomic project management solution." name="description" />
+
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="{% static 'hyper/assets/images/favicon.ico' %}">
+
+        <!-- Theme Config Js -->
+        <script src="{% static 'hyper/assets/js/hyper-config.js' %}"></script>
+
+        <!-- App css -->
+        <link href="{% static 'hyper/assets/css/app-saas.min.css' %}" rel="stylesheet" type="text/css" id="app-style" />
+
+        <!-- Icons css -->
+        <link href="{% static 'hyper/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+    </head>
+
+    {% block content %}
+          <body>
+        <!-- Begin page -->
+        <div class="wrapper">
+
+            {% include "launch/top_nav.html" %}
+
+            {% include "launch/side_nav.html" %}
+            <!-- ========== Topbar Start ========== -->
+
+            <!-- ========== Topbar End ========== -->
+
+            <!-- ========== Left Sidebar Start ========== -->
+
+            <!-- ========== Left Sidebar End ========== -->
+
+            <!-- ============================================================== -->
+            <!-- Start Page Content here -->
+            <!-- ============================================================== -->
+
+            <div class="content-page">
+                <div class="content">
+
+                    {% block main %}{% endblock %}
+                    <!-- Start Content-->
+
+
+                </div> <!-- content -->
+
+                <!-- Footer Start -->
+                <footer class="footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-6">
+                                2023 © Launch Collective
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-md-end footer-links d-none d-md-block">
+                                    <a href="javascript: void(0);">About</a>
+                                    <a href="javascript: void(0);">Support</a>
+                                    <a href="javascript: void(0);">Contact Us</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+                <!-- end Footer -->
+
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- End Page content -->
+            <!-- ============================================================== -->
+
+        </div>
+        <!-- END wrapper -->
+
+    </body>
+    {% endblock %}
+
+
+</html>
