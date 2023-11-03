@@ -22,5 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", views.LoginView.as_view(), name="login"),
     path("dashboard/", views.dashboard_index, name="dashboard_index"),
-
+    path("project-create/", views.project_create, name="project_create"),
+    path("", views.index, name="index"),
 ]
