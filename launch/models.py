@@ -2,17 +2,6 @@ from django.db import models
 from django.conf import settings
 
 
-class Organisation(models.Model):
-    name = models.CharField(max_length=200)
-    time_created = models.DateTimeField(auto_now_add=True)
-    time_modified = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', through_fields=('organisation', 'user'))
-
-    def __str__(self):
-        return self.name
-
-
 class OrganisationMembership(models.Model):
     ADMIN = 'admin'
     LEADER = 'leader'
@@ -24,11 +13,24 @@ class OrganisationMembership(models.Model):
         (MEMBER, "Member"),
     )
 
-    organisation = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    organisation = models.ForeignKey("Organisation", on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
     role = models.CharField(max_length=100, choices=ROLE_CHOICES, default=MEMBER)
     time_created = models.DateTimeField(auto_now_add=True)
     time_modified = models.DateTimeField(auto_now=True)
+
+class Organisation(models.Model):
+    name = models.CharField(max_length=200)
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_modified = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, through=OrganisationMembership, through_fields=('organisation', 'user'))
+
+    def __str__(self):
+        return self.name
+
+
+
 
 
 class ProjectMembership(models.Model):
