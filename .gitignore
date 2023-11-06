@@ -19,5 +19,4 @@ __pycache__/
 media/
 node_modules
 build/
-launch/static/hyper/assets/
 launch/templates/hyper/
