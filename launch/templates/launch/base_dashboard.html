@@ -5,84 +5,112 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="utf-8" />
-        <title>Launch</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="The ergonomic project management solution." name="description" />
+<head>
+  <meta charset="utf-8"/>
+  <title>Launch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta content="The ergonomic project management solution." name="description"/>
 
-        <!-- App favicon -->
-        <link rel="shortcut icon" href="{% static 'hyper/assets/images/favicon.ico' %}">
+  <!-- App favicon -->
+  <link rel="shortcut icon" href="{% static 'hyper/assets/images/favicon.ico' %}">
 
-        <!-- Theme Config Js -->
-        <script src="{% static 'hyper/assets/js/hyper-config.js' %}"></script>
+  <!-- Theme Config Js -->
+  <script src="{% static 'hyper/assets/js/hyper-config.js' %}"></script>
 
-        <!-- App css -->
-        <link href="{% static 'hyper/assets/css/app-saas.min.css' %}" rel="stylesheet" type="text/css" id="app-style" />
+  <!-- App css -->
+  <link href="{% static 'hyper/assets/css/app-saas.min.css' %}" rel="stylesheet" type="text/css" id="app-style"/>
 
-        <!-- Icons css -->
-        <link href="{% static 'hyper/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
-    </head>
+  <!-- Icons css -->
+  <link href="{% static 'hyper/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css"/>
+</head>
 
-    {% block content %}
-          <body>
-        <!-- Begin page -->
-        <div class="wrapper">
+{% block content %}
+  <body>
+  <!-- Begin page -->
+  <div class="wrapper">
 
-            {% include "launch/top_nav.html" %}
+    {% include "launch/top_nav.html" %}
 
-            {% include "launch/side_nav.html" %}
-            <!-- ========== Topbar Start ========== -->
+    {% include "launch/side_nav.html" %}
+    <!-- ========== Topbar Start ========== -->
 
-            <!-- ========== Topbar End ========== -->
+    <!-- ========== Topbar End ========== -->
 
-            <!-- ========== Left Sidebar Start ========== -->
+    <!-- ========== Left Sidebar Start ========== -->
 
-            <!-- ========== Left Sidebar End ========== -->
+    <!-- ========== Left Sidebar End ========== -->
 
-            <!-- ============================================================== -->
-            <!-- Start Page Content here -->
-            <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Start Page Content here -->
+    <!-- ============================================================== -->
 
-            <div class="content-page">
-                <div class="content">
+    <div class="content-page">
+      <div class="content">
 
-                    {% block main %}{% endblock %}
-                    <!-- Start Content-->
+        {% include "launch/_messages.html" %}
 
+        <div class="container-fluid">
 
-                </div> <!-- content -->
-
-                <!-- Footer Start -->
-                <footer class="footer">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-6">
-                                2023 © Launch Collective
-                            </div>
-                            <div class="col-md-6">
-                                <div class="text-md-end footer-links d-none d-md-block">
-                                    <a href="javascript: void(0);">About</a>
-                                    <a href="javascript: void(0);">Support</a>
-                                    <a href="javascript: void(0);">Contact Us</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </footer>
-                <!-- end Footer -->
-
+          <!-- start page title -->
+          <div class="row">
+            <div class="col-12">
+              <div class="page-title-box">
+                <div class="page-title-right">
+                  {% if breadcrumbs %}
+                    <ol class="breadcrumb m-0">
+                      {% for text, url in breadcrumbs %}
+                        <li class="breadcrumb-item {% if not url %}active{% endif %}">
+                          {% if url %}<a href="{{ url }}">{% endif %}{{ text }}{% if url %}</a>{% endif %}
+                        </li>
+                      {% endfor %}
+                    </ol>
+                  {% endif %}
+                </div>
+                <h4 class="page-title">{% block page_title %}{% endblock %}</h4>
+              </div>
             </div>
+          </div>
 
-            <!-- ============================================================== -->
-            <!-- End Page content -->
-            <!-- ============================================================== -->
-
+          {% block main %}{% endblock %}
         </div>
-        <!-- END wrapper -->
+        <!-- end page title -->
 
-    </body>
-    {% endblock %}
+
+        <!-- Start Content-->
+
+
+      </div> <!-- content -->
+
+      <!-- Footer Start -->
+      <footer class="footer">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6">
+              2023 © Launch Collective
+            </div>
+            <div class="col-md-6">
+              <div class="text-md-end footer-links d-none d-md-block">
+                <a href="javascript: void(0);">About</a>
+                <a href="javascript: void(0);">Support</a>
+                <a href="javascript: void(0);">Contact Us</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+      <!-- end Footer -->
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- End Page content -->
+    <!-- ============================================================== -->
+
+  </div>
+  <!-- END wrapper -->
+
+  </body>
+{% endblock %}
 
 
 </html>

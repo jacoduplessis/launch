@@ -29,10 +29,6 @@ class Organisation(models.Model):
     def __str__(self):
         return self.name
 
-
-
-
-
 class ProjectMembership(models.Model):
     ADMIN = 'admin'
     LEADER = 'leader'
@@ -73,3 +69,33 @@ class Attachment(models.Model):
     file = models.FileField(upload_to="attachments/", blank=True)
     mime_type = models.CharField(max_length=100)
     size = models.PositiveBigIntegerField(default=0)
+
+
+class Action(models.Model):
+
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+    PRIORITY_CHOICES = (
+        (HIGH, "High"),
+        (MEDIUM, "Medium"),
+        (LOW, "Low"),
+    )
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="actions")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    due_date = models.DateField(null=True)
+    priority = models.CharField(max_length=200, choices=PRIORITY_CHOICES, default=MEDIUM)
+    sub_tasks = models.TextField(blank=True)
+    time_completed = models.DateTimeField(null=True, blank=True)  # tracks completion
+
+    def __str__(self):
+        return f"{self.project_id} {self.name}"
+

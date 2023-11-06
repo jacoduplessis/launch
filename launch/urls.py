@@ -21,7 +21,11 @@ from launch import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", views.LoginView.as_view(), name="login"),
-    path("dashboard/", views.dashboard_index, name="dashboard_index"),
+    path("logout/", views.LogoutView.as_view(), name="logout"),
+    path("dashboard/", views.project_list, name="dashboard_index"),
     path("project-create/", views.project_create, name="project_create"),
+    path("projects/", views.project_list, name="project_list"),
+    path("projects/<int:pk>/", views.project_detail, name="project_detail"),
+    path("projects/<int:pk>/actions/", views.action_list, name="action_list"),
     path("", views.index, name="index"),
 ]

@@ -2,25 +2,11 @@
 
 {% load static %}
 
-{% block main %}
-  <div class="container-fluid">
+{% block page_title %}Projects List{% endblock %}
 
-    <!-- start page title -->
-    <div class="row">
-      <div class="col-12">
-        <div class="page-title-box">
-          <div class="page-title-right">
-            <ol class="breadcrumb m-0">
-              <li class="breadcrumb-item"><a href="javascript: void(0);">Hyper</a></li>
-              <li class="breadcrumb-item"><a href="javascript: void(0);">Projects</a></li>
-              <li class="breadcrumb-item active">Projects List</li>
-            </ol>
-          </div>
-          <h4 class="page-title">Projects List</h4>
-        </div>
-      </div>
-    </div>
-    <!-- end page title -->
+{% block main %}
+
+
 
     <div class="row mb-2">
       <div class="col-sm-4">
@@ -45,6 +31,16 @@
       </div><!-- end col-->
     </div>
     <!-- end row-->
+
+    <div class="row">
+      <div class="col">
+        <ul>
+          {% for project in projects %}
+          <li><a href="{% url 'project_detail' project.pk %}">{{ project.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
 
     <div class="row">
       <div class="col-md-6 col-xxl-3">
@@ -522,5 +518,4 @@
     </div>
     <!-- end row-->
 
-  </div> <!-- container -->
 {% endblock %}
