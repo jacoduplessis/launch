@@ -1,0 +1,27 @@
+{% load crispy_forms_filters static %}
+
+<div class="card" id="comments">
+  <div class="card-body">
+    <h4 class="mt-0 mb-3">Comments ({{ comments|length }})</h4>
+
+    <form method="post" up-submit action="{% url 'comment_create' %}" up-target="#comments">
+      {% csrf_token %}
+      {{ comment_form|crispy }}
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <input type="submit" class="btn btn-primary btn-sm" value="Submit">
+    </form>
+
+    {% for comment in comments %}
+      <div class="d-flex align-items-start mt-3">
+        <img class="me-3 avatar-sm rounded-circle" src="{% static 'hyper/assets/images/users/avatar-3.jpg' %}" alt="Generic placeholder image">
+        <div class="w-100 overflow-hidden">
+          <h5 class="mt-0">{{ comment.created_by.email }}</h5>
+          <p class="text-muted small">{{ comment.time_created|timesince }} ago</p>
+          {{ comment.body|linebreaks }}
+
+        </div>
+      </div>
+    {% endfor %}
+
+  </div> <!-- end card-body-->
+</div>

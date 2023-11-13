@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.conf import settings
@@ -78,6 +80,18 @@ class Attachment(models.Model):
     file = models.FileField(upload_to="attachments/", blank=True)
     mime_type = models.CharField(max_length=100)
     size = models.PositiveBigIntegerField(default=0)
+
+    @property
+    def suffix(self):
+        if self.file is None:
+            return ""
+        return Path(self.file.name).suffix
+
+    @property
+    def name(self):
+        if self.file is None:
+            return ""
+        return Path(self.file.name).name
 
 
 class Comment(models.Model):

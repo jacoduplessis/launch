@@ -1,0 +1,42 @@
+{% load static crispy_forms_filters %}
+
+<div class="card" id="attachments">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Attachments</h5>
+
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'attachment_create' %}" up-submit target="#attachments">
+      {% csrf_token %}
+      {{ attachment_form|crispy }}
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <input type="submit" value="Submit" class="btn btn-primary btn-sm">
+    </form>
+
+    {% for attachment in attachments %}
+    <div class="card mb-1 shadow-none border mt-2">
+      <div class="p-2">
+        <div class="row align-items-center">
+          <div class="col-auto">
+            <div class="avatar-sm">
+                                                            <span class="avatar-title rounded">
+                                                                {{ attachment.suffix }}
+                                                            </span>
+            </div>
+          </div>
+          <div class="col ps-0">
+            <a href="{{ attachment.file.url }}" download class="text-muted fw-bold">{{ attachment.name }}</a>
+            <p class="mb-0">{{ attachment.size|filesizeformat }}</p>
+          </div>
+          <div class="col-auto">
+            <!-- Button -->
+            <a href="{{ attachment.file.url }}" download class="btn btn-link btn-lg text-muted">
+              <i class="ri-download-2-line"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>

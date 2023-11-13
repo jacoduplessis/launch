@@ -1,3 +1,4 @@
+import mimetypes
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -15,7 +16,7 @@ from django.utils.lorem_ipsum import paragraphs, words
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
-from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm
+from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm, AttachmentCreateForm
 from launch.models import Project, OrganisationMembership, Action, Comment, Attachment
 
 
@@ -120,6 +121,12 @@ def project_detail(request, pk):
                 "content_type": ContentType.objects.get_for_model(Project),
                 "object_id": project.pk,
             }
+        ),
+        "attachment_form": AttachmentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Project),
+                "object_id": project.pk,
+            }
         )
     }
     return render(request, "launch/project_detail.html", context)
@@ -211,5 +218,32 @@ def comment_create(request):
     comment = form.save(commit=False)
     comment.created_by = request.user
     comment.save()
+
+    next_url = request.POST.get("next")
+    if next_url:
+        return HttpResponseRedirect(next_url)
+
+    return HttpResponse("OK")
+
+
+@require_POST
+@login_required
+def attachment_create(request):
+    form = AttachmentCreateForm(request.POST, request.FILES)
+
+    if not form.is_valid():
+        return HttpResponseBadRequest()
+
+    attachment = form.save(commit=False)
+    uploaded_file = request.FILES['file']
+    attachment.size = uploaded_file.size
+    mime_type, encoding = mimetypes.guess_type(uploaded_file.name)
+    attachment.mime_type = mime_type
+    attachment.created_by = request.user
+    attachment.save()
+
+    next_url = request.POST.get("next")
+    if next_url:
+        return HttpResponseRedirect(next_url)
 
     return HttpResponse("OK")

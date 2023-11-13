@@ -54,7 +54,7 @@
             <div class="col-md-4">
               <div class="mb-4">
                 <h5>Budget</h5>
-                <p>$15,800</p>
+                <p>---</p>
               </div>
             </div>
           </div>
@@ -98,30 +98,8 @@
         </div> <!-- end card-body-->
       </div>
 
-      <div class="card">
-        <div class="card-body">
-          <h4 class="mt-0 mb-3">Comments ({{ project.comments.all|length }})</h4>
-
-          <form method="post" up-submit action="{% url 'comment_create' %}" up-target=":none">
-            {% csrf_token %}
-            {{ comment_form|crispy }}
-            <input type="submit" class="btn btn-primary btn-sm" value="Submit">
-          </form>
-
-          {% for comment in project.comments.all %}
-            <div class="d-flex align-items-start mt-2">
-              <img class="me-3 avatar-sm rounded-circle" src="{% static 'hyper/assets/images/users/avatar-3.jpg' %}" alt="Generic placeholder image">
-              <div class="w-100 overflow-hidden">
-                <h5 class="mt-0">{{ comment.created_by.email }}</h5>
-                <p class="text-muted small">{{ comment.time_created|timesince }} ago</p>
-                {{ comment.body|linebreaks }}
-
-              </div>
-            </div>
-          {% endfor %}
-
-        </div> <!-- end card-body-->
-      </div>
+      {% url 'project_detail' project.pk as next_url %}
+      {% include "launch/_comments.html" with comment_form=comment_form comments=project.comments.all next_url=next_url %}
       <!-- end card-->
     </div> <!-- end col -->
 
@@ -137,81 +115,8 @@
         </div>
       </div>
       <!-- end card-->
-
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Files</h5>
-
-          <div class="card mb-1 shadow-none border">
-            <div class="p-2">
-              <div class="row align-items-center">
-                <div class="col-auto">
-                  <div class="avatar-sm">
-                                                            <span class="avatar-title rounded">
-                                                                .ZIP
-                                                            </span>
-                  </div>
-                </div>
-                <div class="col ps-0">
-                  <a href="javascript:void(0);" class="text-muted fw-bold">Hyper-admin-design.zip</a>
-                  <p class="mb-0">2.3 MB</p>
-                </div>
-                <div class="col-auto">
-                  <!-- Button -->
-                  <a href="javascript:void(0);" class="btn btn-link btn-lg text-muted">
-                    <i class="ri-download-2-line"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-1 shadow-none border">
-            <div class="p-2">
-              <div class="row align-items-center">
-                <div class="col-auto">
-                  <img src="assets/images/projects/project-1.jpg" class="avatar-sm rounded" alt="file-image"/>
-                </div>
-                <div class="col ps-0">
-                  <a href="javascript:void(0);" class="text-muted fw-bold">Dashboard-design.jpg</a>
-                  <p class="mb-0">3.25 MB</p>
-                </div>
-                <div class="col-auto">
-                  <!-- Button -->
-                  <a href="javascript:void(0);" class="btn btn-link btn-lg text-muted">
-                    <i class="ri-download-2-line"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-0 shadow-none border">
-            <div class="p-2">
-              <div class="row align-items-center">
-                <div class="col-auto">
-                  <div class="avatar-sm">
-                                                            <span class="avatar-title text-bg-secondary rounded">
-                                                                .MP4
-                                                            </span>
-                  </div>
-                </div>
-                <div class="col ps-0">
-                  <a href="javascript:void(0);" class="text-muted fw-bold">Admin-bug-report.mp4</a>
-                  <p class="mb-0">7.05 MB</p>
-                </div>
-                <div class="col-auto">
-                  <!-- Button -->
-                  <a href="javascript:void(0);" class="btn btn-link btn-lg text-muted">
-                    <i class="ri-download-2-line"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
+      {% url 'project_detail' project.pk as next_url %}
+      {% include 'launch/_attachments.html' with attachments=project.attachments.all attachment_form=attachment_form next_url=next_url %}
     </div>
   </div>
 {% endblock %}

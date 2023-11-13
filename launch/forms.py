@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Project, Action, Comment
+from .models import Project, Action, Comment, Attachment
 
 
 class ProjectCreateForm(forms.ModelForm):
@@ -49,3 +49,22 @@ class CommentCreateForm(forms.ModelForm):
         }
 
 
+class AttachmentCreateForm(forms.ModelForm):
+    class Meta:
+        model = Attachment
+        fields = [
+            "content_type",
+            "object_id",
+            "file",
+        ]
+        widgets = {
+            "content_type": forms.HiddenInput(),
+            "object_id": forms.HiddenInput(),
+        }
+        labels = {
+            "file": "Upload Attachment",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["file"].required = True
