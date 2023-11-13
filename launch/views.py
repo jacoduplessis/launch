@@ -1,8 +1,9 @@
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch, Count
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
@@ -12,9 +13,10 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils.lorem_ipsum import paragraphs, words
 from django.utils.timezone import now
+from django.views.decorators.http import require_POST
 
-from launch.forms import ProjectCreateForm, ActionCreateForm
-from launch.models import Project, OrganisationMembership, Action
+from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm
+from launch.models import Project, OrganisationMembership, Action, Comment, Attachment
 
 
 class LoginView(BaseLoginView):
@@ -36,6 +38,8 @@ def project_list(request):
         ),
         "projects": Project.objects.filter(created_by_id=request.user.id).annotate(
             num_actions=Count("actions"),
+            num_comments=Count("comments"),
+            num_attachmets=Count("attachments"),
         )
     }
     return render(request, template_name="launch/project_list.html", context=context)
@@ -92,13 +96,30 @@ def project_create(request):
 
 @login_required
 def project_detail(request, pk):
-    project = get_object_or_404(Project, pk=pk)
+    comments_prefetch = Prefetch(
+        "comments",
+        queryset=Comment.objects.select_related("created_by").order_by("time_created"),
+    )
+
+    attachments_prefetch = Prefetch(
+        "attachments",
+        queryset=Attachment.objects.select_related("created_by")
+    )
+
+    qs = Project.objects.prefetch_related(comments_prefetch, attachments_prefetch)
+    project = get_object_or_404(qs, pk=pk)
     context = {
         "project": project,
         "breadcrumbs": (
             ("Launch", "/"),
             ("Projects", reverse("project_list")),
             ("Detail", None)
+        ),
+        "comment_form": CommentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Project),
+                "object_id": project.pk,
+            }
         )
     }
     return render(request, "launch/project_detail.html", context)
@@ -177,3 +198,18 @@ def action_detail(request, pk):
     }
 
     return render(request, "launch/action_detail.html", context=context)
+
+
+@require_POST
+@login_required
+def comment_create(request):
+    form = CommentCreateForm(request.POST, request.FILES)
+
+    if not form.is_valid():
+        return HttpResponseBadRequest()
+
+    comment = form.save(commit=False)
+    comment.created_by = request.user
+    comment.save()
+
+    return HttpResponse("OK")

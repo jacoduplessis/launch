@@ -1,5 +1,7 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 
 
 class OrganisationMembership(models.Model):
@@ -19,6 +21,7 @@ class OrganisationMembership(models.Model):
     time_created = models.DateTimeField(auto_now_add=True)
     time_modified = models.DateTimeField(auto_now=True)
 
+
 class Organisation(models.Model):
     name = models.CharField(max_length=200)
     time_created = models.DateTimeField(auto_now_add=True)
@@ -28,6 +31,7 @@ class Organisation(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class ProjectMembership(models.Model):
     ADMIN = 'admin'
@@ -60,9 +64,14 @@ class Project(models.Model):
     end_date = models.DateField(blank=True, null=True)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through=ProjectMembership, through_fields=("project", "user"))
 
+    attachments = GenericRelation('Attachment')
+    comments = GenericRelation('Comment')
+
 
 class Attachment(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     time_created = models.DateTimeField(auto_now_add=True)
     time_modified = models.DateTimeField(auto_now=True)
@@ -71,8 +80,16 @@ class Attachment(models.Model):
     size = models.PositiveBigIntegerField(default=0)
 
 
-class Action(models.Model):
+class Comment(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    time_created = models.DateTimeField(auto_now_add=True)
+    body = models.TextField()
 
+
+class Action(models.Model):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -96,6 +113,8 @@ class Action(models.Model):
     sub_tasks = models.TextField(blank=True)
     time_completed = models.DateTimeField(null=True, blank=True)  # tracks completion
 
+    attachments = GenericRelation('Attachment')
+    comments = GenericRelation('Comment')
+
     def __str__(self):
         return f"{self.project_id} {self.name}"
-

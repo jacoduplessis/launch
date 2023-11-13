@@ -29,5 +29,6 @@ urlpatterns = [
     path("projects/<int:pk>/actions/", views.action_list, name="action_list"),
     path("projects/<int:pk>/actions/create/", views.action_create, name="action_create"),
     path("actions/<int:pk>/", views.action_detail, name="action_detail"),
+    path("comment-create/", views.comment_create, name="comment_create"),
     path("", views.index, name="index"),
 ]
