@@ -1,14 +1,19 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
 from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
+from django.template.defaulttags import lorem
 from django.urls import reverse
 from django.contrib import messages
+from django.utils.lorem_ipsum import paragraphs, words
+from django.utils.timezone import now
 
-from launch.forms import ProjectCreateForm
+from launch.forms import ProjectCreateForm, ActionCreateForm
 from launch.models import Project, OrganisationMembership, Action
 
 
@@ -16,9 +21,9 @@ class LoginView(BaseLoginView):
     template_name = "launch/login.html"
     redirect_authenticated_user = True
 
+
 class LogoutView(BaseLogoutView):
     template_name = "launch/logout.html"
-
 
 
 @login_required
@@ -29,9 +34,11 @@ def project_list(request):
             ("Projects", reverse("project_list")),
             ("List", None)
         ),
-        "projects": Project.objects.filter(created_by_id=request.user.id)
+        "projects": Project.objects.filter(created_by_id=request.user.id).annotate(
+            num_actions=Count("actions"),
+        )
     }
-    return render(request, template_name="launch/dashboard_index.html", context=context)
+    return render(request, template_name="launch/project_list.html", context=context)
 
 
 def index(request):
@@ -51,9 +58,15 @@ def project_create(request):
     }
 
     if request.method == "GET":
-        context["form"] = ProjectCreateForm()
+        context["form"] = ProjectCreateForm(
+            initial={
+                "name": words(count=6, common=False),
+                "overview": "\n\n".join(paragraphs(count=4, common=False)),
+                "start_date": now(),
+                "end_date": now() + timedelta(days=180)
+            }
+        )
         return render(request, "launch/project_create.html", context=context)
-
 
     if request.method == "POST":
         form = ProjectCreateForm(request.POST, request.FILES)
@@ -76,9 +89,9 @@ def project_create(request):
             reverse("project_detail", args=[obj.pk])
         )
 
+
 @login_required
 def project_detail(request, pk):
-
     project = get_object_or_404(Project, pk=pk)
     context = {
         "project": project,
@@ -90,9 +103,9 @@ def project_detail(request, pk):
     }
     return render(request, "launch/project_detail.html", context)
 
+
 @login_required
 def action_list(request, pk):
-
     actions_prefetch = Prefetch("actions", Action.objects.all())
 
     project = get_object_or_404(Project.objects.prefetch_related(
@@ -111,3 +124,56 @@ def action_list(request, pk):
     }
 
     return render(request, "launch/action_list.html", context)
+
+
+@login_required()
+def action_create(request, pk):
+    project = get_object_or_404(Project.objects.all(), pk=pk)
+
+    context = {
+        "breadcrumbs": (
+            ("Launch", "/"),
+            ("Projects", reverse("project_list")),
+            (project.name, reverse("project_detail", args=[project.pk])),
+            ("Actions", reverse("action_list", args=[project.pk])),
+            ("Create", None)
+        )
+    }
+
+    if request.method == "GET":
+        context["form"] = ActionCreateForm(
+            initial={
+                "name": words(count=6, common=False),
+                "description": "\n\n".join(paragraphs(count=4, common=False)),
+                "due_date": now() + timedelta(days=30),
+            }
+        )
+        return render(request, "launch/action_create.html", context=context)
+
+    if request.method == "POST":
+        form = ActionCreateForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            context["form"] = form
+            return render(request, "launch/action_create.html", context=context)
+
+        obj = form.save(commit=False)
+        obj.created_by = request.user
+        obj.project = project
+        obj.save()
+
+        messages.success(request, "Action has been created.")
+        return HttpResponseRedirect(
+            reverse("action_list", args=[project.pk])
+        )
+
+
+@login_required
+def action_detail(request, pk):
+    action = get_object_or_404(Action, pk=pk)
+
+    context = {
+        "action": action,
+    }
+
+    return render(request, "launch/action_detail.html", context=context)

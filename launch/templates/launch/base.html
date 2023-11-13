@@ -19,13 +19,21 @@
 
   <!-- Icons css -->
   <link href="{% static 'hyper/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css"/>
+  <link href="{% static 'launch/unpoly.min.css' %}" rel="stylesheet" type="text/css"/>
+  <link href="{% static 'launch/unpoly-bootstrap5.min.css' %}" rel="stylesheet" type="text/css"/>
+
+  <script src="{% static 'hyper/assets/js/vendor.min.js' %}" defer></script>
+  <script src="{% static 'hyper/assets/js/app.min.js' %}" defer></script>
+  <script src="{% static 'launch/unpoly.min.js' %}" defer></script>
+  <script src="{% static 'launch/unpoly-bootstrap5.min.js' %}" defer></script>
+
+
 </head>
 {% block content %}{% endblock %}
 
 {% block footer_scripts %}
 
-  <script src="{% static 'hyper/assets/js/vendor.min.js' %}"></script>
-  <script src="{% static 'hyper/assets/js/app.min.js' %}"></script>
+
 
 {% endblock %}
 {% block footer %}{% endblock %}

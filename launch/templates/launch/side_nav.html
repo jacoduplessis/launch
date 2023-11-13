@@ -81,7 +81,7 @@
         <div class="collapse" id="sidebarProjects">
           <ul class="side-nav-second-level">
             <li>
-              <a href="apps-projects-list.html">List</a>
+              <a href="{% url 'project_list' %}">List</a>
             </li>
             <li>
               <a href="apps-projects-details.html">Details</a>
@@ -90,7 +90,7 @@
               <a href="apps-projects-gantt.html">Tasks</a>
             </li>
             <li>
-              <a href="apps-projects-add.html">Create Project</a>
+              <a href="{% url 'project_create' %}" up-follow>Create Project</a>
             </li>
           </ul>
         </div>

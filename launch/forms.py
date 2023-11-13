@@ -1,5 +1,6 @@
 from django import forms
-from .models import Project
+from .models import Project, Action
+
 
 class ProjectCreateForm(forms.ModelForm):
 
@@ -12,4 +13,18 @@ class ProjectCreateForm(forms.ModelForm):
             "lead",
             "start_date",
             "end_date",
+        ]
+
+
+class ActionCreateForm(forms.ModelForm):
+
+    class Meta:
+        model = Action
+        fields = [
+            "name",
+            "description",
+            "assigned_to",
+            "due_date",
+            "priority",
+            "sub_tasks",
         ]
