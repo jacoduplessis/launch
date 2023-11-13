@@ -39,7 +39,7 @@ def project_list(request):
         "projects": Project.objects.filter(created_by_id=request.user.id).annotate(
             num_actions=Count("actions"),
             num_comments=Count("comments"),
-            num_attachmets=Count("attachments"),
+            num_attachments=Count("attachments"),
         )
     }
     return render(request, template_name="launch/project_list.html", context=context)
