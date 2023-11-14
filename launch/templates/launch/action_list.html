@@ -1,5 +1,7 @@
 {% extends "launch/base_dashboard.html" %}
 
+{% load static %}
+
 {% block page_title %}Actions{% endblock %}
 
 {% block main %}
@@ -58,7 +60,7 @@
                 <div class="col-sm-6">
                   <div class="d-flex justify-content-between">
                     <div id="tooltip-container">
-                      <img src="assets/images/users/avatar-9.jpg" alt="image" class="avatar-xs rounded-circle me-1"
+                      <img src="{% static 'hyper/assets/images/users/avatar-9.jpg' %}" alt="image" class="avatar-xs rounded-circle me-1"
                            data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to Arya S"/>
                     </div>
                     <div>
