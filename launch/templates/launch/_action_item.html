@@ -1,0 +1,29 @@
+{% load static %}
+<div class="row justify-content-sm-between">
+  <div class="col-sm-6 mb-2 mb-sm-0">
+      <a class="text-black text-decoration-underline" href="{% url 'action_detail' action.pk %}" up-layer="new">
+        {{ action.name}}
+      </a>
+  </div> <!-- end col -->
+  <div class="col-sm-6">
+    <div class="d-flex justify-content-between">
+      <div id="tooltip-container">
+        <img src="{% static 'hyper/assets/images/users/avatar-9.jpg' %}" alt="image" class="avatar-xs rounded-circle me-1"
+             data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to Arya S"/>
+      </div>
+      <div>
+        <ul class="list-inline font-13 text-end">
+          <li class="list-inline-item">
+            <i class='uil uil-schedule font-16 me-1'></i> {{ action.due_date|date:'Y-m-d' }}
+          </li>
+          <li class="list-inline-item ms-1">
+            <i class='uil uil-comment-message font-16 me-1'></i> {{ action.comments.all|length }}
+          </li>
+          <li class="list-inline-item ms-2">
+            <span class="badge badge-{% if action.priority == action.HIGH %}danger{% elif action.priority == action.MEDIUM %}info{% else %}success{% endif %}-lighten p-1">{{ action.priority }}</span>
+          </li>
+        </ul>
+      </div>
+    </div> <!-- end .d-flex-->
+  </div> <!-- end col -->
+</div>

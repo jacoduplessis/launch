@@ -38,9 +38,9 @@ def project_list(request):
             ("List", None)
         ),
         "projects": Project.objects.filter(created_by_id=request.user.id).annotate(
-            num_actions=Count("actions"),
-            num_comments=Count("comments"),
-            num_attachments=Count("attachments"),
+            num_actions=Count("actions", distinct=True),
+            num_comments=Count("comments", distinct=True),
+            num_attachments=Count("attachments", distinct=True),
         )
     }
     return render(request, template_name="launch/project_list.html", context=context)
@@ -134,15 +134,24 @@ def project_detail(request, pk):
 
 @login_required
 def action_list(request, pk):
-    actions_prefetch = Prefetch("actions", Action.objects.all())
+    actions_prefetch = Prefetch("actions", Action.objects.prefetch_related("comments").order_by("due_date"))
 
     project = get_object_or_404(Project.objects.prefetch_related(
         actions_prefetch
     ), pk=pk)
 
+    all_actions = list(project.actions.all())
+
+    todays_actions = [a for a in all_actions if a.due_date == now().date()]
+    upcoming_actions = [a for a in all_actions if a.due_date > now().date()]
+    other_actions = [a for a in all_actions if a.due_date < now().date()]
+
     context = {
         "project": project,
         "actions": project.actions.all(),
+        "todays_actions": todays_actions,
+        "upcoming_actions": upcoming_actions,
+        "other_actions": other_actions,
         "breadcrumbs": (
             ("Launch", "/"),
             ("Projects", reverse("project_list")),
@@ -173,7 +182,7 @@ def action_create(request, pk):
             initial={
                 "name": words(count=6, common=False),
                 "description": "\n\n".join(paragraphs(count=4, common=False)),
-                "due_date": now() + timedelta(days=30),
+                "due_date": now().date(),
             }
         )
         return render(request, "launch/action_create.html", context=context)
@@ -198,10 +207,17 @@ def action_create(request, pk):
 
 @login_required
 def action_detail(request, pk):
-    action = get_object_or_404(Action, pk=pk)
+    comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
+    action = get_object_or_404(Action.objects.prefetch_related(comments_prefetch), pk=pk)
 
     context = {
         "action": action,
+        "comment_form": CommentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Action),
+                "object_id": action.pk,
+            }
+        ),
     }
 
     return render(request, "launch/action_detail.html", context=context)

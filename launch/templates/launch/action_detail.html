@@ -3,4 +3,7 @@
   <hr>
 
   <div>{{ action.description|linebreaks }}</div>
+
+  {% url 'action_detail' action.pk as next_url %}
+  {% include "launch/_comments.html" with comment_form=comment_form comments=action.comments.all next_url=next_url %}
 </main>

@@ -5,11 +5,10 @@
     <h5 class="card-title mb-3">Attachments</h5>
 
 
-    <form method="post" enctype="multipart/form-data" action="{% url 'attachment_create' %}" up-submit target="#attachments">
+    <form method="post" enctype="multipart/form-data" action="{% url 'attachment_create' %}" up-submit up-autosubmit target="#attachments">
       {% csrf_token %}
       {{ attachment_form|crispy }}
       <input type="hidden" name="next" value="{{ next_url }}">
-      <input type="submit" value="Submit" class="btn btn-primary btn-sm">
     </form>
 
     {% for attachment in attachments %}
@@ -24,7 +23,7 @@
             </div>
           </div>
           <div class="col ps-0">
-            <a href="{{ attachment.file.url }}" download class="text-muted fw-bold">{{ attachment.name }}</a>
+            <a href="{{ attachment.file.url }}" download class="text-muted fw-bold">{{ attachment.name|truncatechars:15 }}</a>
             <p class="mb-0">{{ attachment.size|filesizeformat }}</p>
           </div>
           <div class="col-auto">
