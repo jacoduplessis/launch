@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "launch"
-version = "24.2.040"
+version = "24.2.041"
 requires-python = ">=3.12"
 dependencies = [
     "django==5.0.1",
