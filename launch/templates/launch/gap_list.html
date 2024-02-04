@@ -6,23 +6,25 @@
 
 {% block main %}
 
-    <p><a href="{% url 'gap_create' project.pk %}" up-layer="new">Create</a></p>
-  
-<table class="table">
-  <thead>
+  <p><a href="{% url 'gap_create' project.pk %}" class="btn btn-success" up-layer="new">Create</a></p>
+
+  <table class="table">
+    <thead>
     <tr>
       <th>Name</th>
-      <th>Description</th>
       <th>Created By</th>
+      <th>Actions</th>
     </tr>
-  </thead>
-  {% for obj in project.gaps.all %}
-    <tr>
-      <td>{{ obj.name }}</td>
-      <td>{{ obj.description }}</td>
-      <td>{{ obj.created_by.email }}</td>
-    </tr>
-  {% endfor %}
-</table>
+    </thead>
+    {% for obj in project.gaps.all %}
+      <tr>
+        <td><a class="text-black text-decoration-underline" href="{% url 'gap_detail' obj.pk %}" up-layer="new">
+          {{ obj.name }}
+        </a></td>
+        <td>{{ obj.created_by.email }}</td>
+        <td><a href="{% url 'gap_update' obj.pk %}">Edit</a></td>
+      </tr>
+    {% endfor %}
+  </table>
 
 {% endblock %}

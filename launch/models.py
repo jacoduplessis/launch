@@ -165,6 +165,12 @@ class Risk(models.Model):
     impact = models.PositiveIntegerField(choices=ONE_TO_FIVE)
     likelihood = models.PositiveIntegerField(choices=ONE_TO_FIVE)
 
+    comments = GenericRelation('Comment')
+
+    @property
+    def risk(self):
+        return self.impact * self.likelihood
+
 
 class Issue(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="issues")
@@ -174,6 +180,8 @@ class Issue(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     impact = models.PositiveIntegerField(choices=ONE_TO_FIVE)
+
+    comments = GenericRelation('Comment')
 
 
 class Decision(models.Model):
@@ -185,6 +193,8 @@ class Decision(models.Model):
     description = models.TextField(blank=True)
     next_steps = models.TextField(blank=True)
 
+    comments = GenericRelation('Comment')
+
 
 class Gap(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="gaps")
@@ -194,3 +204,5 @@ class Gap(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     mitigation = models.TextField(blank=True)
+
+    comments = GenericRelation('Comment')

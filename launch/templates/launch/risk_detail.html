@@ -1,0 +1,22 @@
+<main>
+  <h2>{{ risk.name}}</h2>
+  <hr>
+
+  <h4>Description</h4>
+  <div>{{ risk.description|linebreaks }}</div>
+
+  <h4>Mitigation</h4>
+  <div>{{ risk.mitigation|linebreaks }}</div>
+
+  <h4>Likelihood</h4>
+  <div>{{ risk.likelihood }}</div>
+
+  <h4>Impact</h4>
+  <div>{{ risk.impact }}</div>
+
+  <h4>Risk</h4>
+  <div>{{ risk.risk }}</div>
+
+  {% url 'risk_detail' risk.pk as next_url %}
+  {% include "launch/_comments.html" with comment_form=comment_form comments=risk.comments.all next_url=next_url %}
+</main>

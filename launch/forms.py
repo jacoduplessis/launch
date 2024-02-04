@@ -3,6 +3,7 @@ from django import forms
 from .models import Project, Action, Comment, Attachment, Risk, Issue, Gap, Decision, ProjectMembership
 from django.contrib.auth.models import User
 
+
 class ProjectCreateForm(forms.ModelForm):
     class Meta:
         model = Project
@@ -138,7 +139,6 @@ class DecisionCreateForm(forms.ModelForm):
 
 
 class ProjectMembershipCreateForm(forms.ModelForm):
-
     email = forms.EmailField(required=True)
 
     class Meta:
@@ -148,7 +148,6 @@ class ProjectMembershipCreateForm(forms.ModelForm):
         ]
 
     def save(self, project_id, created_by=None):
-
         email = self.cleaned_data["email"]
 
         user, created = User.objects.get_or_create(
@@ -172,7 +171,6 @@ class ProjectMembershipUpdateForm(forms.ModelForm):
 
 
 class ActionUpdateForm(forms.ModelForm):
-
     class Meta:
         model = Action
         fields = [
@@ -180,4 +178,45 @@ class ActionUpdateForm(forms.ModelForm):
             "assigned_to",
             "due_date",
             "priority",
+        ]
+
+
+class RiskUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Risk
+        fields = [
+            "name",
+            "mitigation",
+            "likelihood",
+            "impact",
+        ]
+
+
+class IssueUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Issue
+        fields = [
+            "name",
+            "description",
+            "impact",
+        ]
+
+
+class DecisionUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Decision
+        fields = [
+            "name",
+            "description",
+            "next_steps",
+        ]
+
+
+class GapUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Gap
+        fields = [
+            "name",
+            "description",
+            "mitigation",
         ]

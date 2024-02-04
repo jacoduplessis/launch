@@ -1,0 +1,13 @@
+<main>
+  <h2>{{ gap.name}}</h2>
+  <hr>
+
+  <h4>Description</h4>
+  <div>{{ gap.description|linebreaks }}</div>
+
+  <h4>Mitigation</h4>
+  <div>{{ gap.mitigation }}</div>
+
+  {% url 'gap_detail' gap.pk as next_url %}
+  {% include "launch/_comments.html" with comment_form=comment_form comments=gap.comments.all next_url=next_url %}
+</main>

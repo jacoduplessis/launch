@@ -1,0 +1,10 @@
+<main>
+  <h2>{{ issue.name}}</h2>
+  <hr>
+
+  <h4>Description</h4>
+  <div>{{ issue.description|linebreaks }}</div>
+
+  {% url 'issue_detail' issue.pk as next_url %}
+  {% include "launch/_comments.html" with comment_form=comment_form comments=issue.comments.all next_url=next_url %}
+</main>

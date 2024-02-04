@@ -1,0 +1,17 @@
+{% extends 'launch/base_dashboard.html' %}
+
+{% load crispy_forms_filters static %}
+
+{% block page_title %}Update Risk{% endblock %}
+
+{% block main %}
+
+<main>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" value="Submit" class="btn btn-primary">
+  </form>
+</main>
+
+{% endblock %}

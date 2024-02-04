@@ -15,8 +15,9 @@ from django.utils.lorem_ipsum import paragraphs, words
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
-from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm, AttachmentCreateForm, ProjectUpdateForm, ProjectImageForm, RiskCreateForm, IssueCreateForm, DecisionCreateForm, GapCreateForm, ProjectMembershipCreateForm, ProjectMembershipUpdateForm, ActionUpdateForm
-from launch.models import Project, OrganisationMembership, Action, Comment, Attachment, Issue, Decision, Gap, ProjectMembership
+from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm, AttachmentCreateForm, ProjectUpdateForm, ProjectImageForm, RiskCreateForm, IssueCreateForm, DecisionCreateForm, GapCreateForm, ProjectMembershipCreateForm, ProjectMembershipUpdateForm, ActionUpdateForm, RiskUpdateForm, \
+    IssueUpdateForm, DecisionUpdateForm, GapUpdateForm
+from launch.models import Project, OrganisationMembership, Action, Comment, Attachment, Issue, Decision, Gap, ProjectMembership, Risk
 
 
 class LoginView(BaseLoginView):
@@ -177,7 +178,6 @@ def project_image(request, pk):
 
 @login_required
 def project_members(request, pk):
-
     if request.method == "GET":
         members_prefetch = Prefetch("members", queryset=ProjectMembership.objects.select_related("user"))
 
@@ -347,15 +347,13 @@ def action_create(request, pk):
 
 @login_required
 def action_update(request, pk):
-
     if request.method == "GET":
-
         action = get_object_or_404(Action.objects.select_related('project'), id=pk)
 
         context = {
             "form": ActionUpdateForm(instance=action),
             "action": action,
-             "breadcrumbs": (
+            "breadcrumbs": (
                 ("Launch", "/"),
                 ("Projects", reverse("project_list")),
                 (action.project.name, reverse("project_detail", args=[action.project.pk])),
@@ -391,6 +389,7 @@ def action_update(request, pk):
             reverse("action_list", args=[action.project.pk])
         )
 
+
 @login_required
 def action_detail(request, pk):
     comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
@@ -407,6 +406,91 @@ def action_detail(request, pk):
     }
 
     return render(request, "launch/action_detail.html", context=context)
+
+
+@login_required
+def risk_list(request, pk):
+    risk_prefetch = Prefetch("risks", Risk.objects.prefetch_related("comments"))
+
+    project = get_object_or_404(Project.objects.prefetch_related(
+        risk_prefetch
+    ), pk=pk)
+
+    context = {
+        "project": project,
+        "risks": project.risks.all(),
+        "breadcrumbs": (
+            ("Launch", "/"),
+            ("Projects", reverse("project_list")),
+            (project.name, reverse("project_detail", args=[project.pk])),
+            ("Risks", None),
+        )
+    }
+
+    return render(request, "launch/risk_list.html", context)
+
+
+@login_required
+def risk_detail(request, pk):
+    comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
+    risk = get_object_or_404(Risk.objects.prefetch_related(comments_prefetch), pk=pk)
+
+    context = {
+        "risk": risk,
+        "comment_form": CommentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Risk),
+                "object_id": risk.pk,
+            }
+        ),
+    }
+
+    return render(request, "launch/risk_detail.html", context=context)
+
+
+@login_required
+def risk_update(request, pk):
+    if request.method == "GET":
+        risk = get_object_or_404(Risk.objects.select_related('project'), id=pk)
+
+        context = {
+            "form": RiskUpdateForm(instance=risk),
+            "risk": risk,
+            "breadcrumbs": (
+                ("Launch", "/"),
+                ("Projects", reverse("project_list")),
+                (risk.project.name, reverse("project_detail", args=[risk.project.pk])),
+                ("Risks", reverse("risk_list", args=[risk.project.pk])),
+                ("Update", None)
+            )
+        }
+
+        return render(request, "launch/risk_update.html", context=context)
+
+    if request.method == "POST":
+        risk = get_object_or_404(Risk.objects.select_related('project'), id=pk)
+        form = RiskUpdateForm(request.POST, request.FILES, instance=risk)
+        if not form.is_valid():
+            context = {
+                "form": form,
+                "risk": risk,
+                "breadcrumbs": (
+                    ("Launch", "/"),
+                    ("Projects", reverse("project_list")),
+                    (risk.project.name, reverse("project_detail", args=[risk.project.pk])),
+                    ("Risks", reverse("risk_list", args=[risk.project.pk])),
+                    ("Update", None)
+                )
+            }
+
+            messages.error(request, "Please correct the form errors and resubmit")
+            return render(request, "launch/risk_update.html", context=context)
+
+        form.save()
+        messages.success(request, "Risk has been updated.")
+        return HttpResponseRedirect(
+            reverse("risk_list", args=[risk.project.pk])
+        )
 
 
 @require_POST
@@ -449,23 +533,6 @@ def attachment_create(request):
         return HttpResponseRedirect(next_url)
 
     return HttpResponse("OK")
-
-
-@login_required()
-def risk_list(request, pk):
-    project = get_object_or_404(Project.objects.prefetch_related("risks"), pk=pk)
-
-    context = {
-        "project": project,
-        "breadcrumbs": (
-            ("Launch", "/"),
-            ("Projects", reverse("project_list")),
-            (project.name, reverse("project_detail", args=[project.pk])),
-            ("Risks", None)
-        )
-    }
-
-    return render(request, "launch/risk_list.html", context=context)
 
 
 @login_required()
@@ -654,3 +721,192 @@ def gap_create(request, pk):
         return HttpResponseRedirect(
             reverse("gap_list", args=[project.pk])
         )
+
+
+@login_required
+def issue_update(request, pk):
+    if request.method == "GET":
+        obj = get_object_or_404(Issue.objects.select_related('project'), id=pk)
+
+        context = {
+            "form": IssueUpdateForm(instance=obj),
+            "issue": obj,
+            "breadcrumbs": (
+                ("Launch", "/"),
+                ("Projects", reverse("project_list")),
+                (obj.project.name, reverse("project_detail", args=[obj.project.pk])),
+                ("Issues", reverse("issue_list", args=[obj.project.pk])),
+                ("Update", None)
+            )
+        }
+
+        return render(request, "launch/issue_update.html", context=context)
+
+    if request.method == "POST":
+        obj = get_object_or_404(Issue.objects.select_related('project'), id=pk)
+        form = IssueUpdateForm(request.POST, request.FILES, instance=obj)
+        if not form.is_valid():
+            context = {
+                "form": form,
+                "issue": obj,
+                "breadcrumbs": (
+                    ("Launch", "/"),
+                    ("Projects", reverse("project_list")),
+                    (obj.project.name, reverse("project_detail", args=[obj.project.pk])),
+                    ("Risks", reverse("risk_list", args=[obj.project.pk])),
+                    ("Update", None)
+                )
+            }
+
+            messages.error(request, "Please correct the form errors and resubmit")
+            return render(request, "launch/issue_update.html", context=context)
+
+        form.save()
+        messages.success(request, "Issue has been updated.")
+        return HttpResponseRedirect(
+            reverse("risk_list", args=[obj.project.pk])
+        )
+
+
+@login_required
+def decision_update(request, pk):
+    if request.method == "GET":
+        obj = get_object_or_404(Decision.objects.select_related('project'), id=pk)
+
+        context = {
+            "form": DecisionUpdateForm(instance=obj),
+            "issue": obj,
+            "breadcrumbs": (
+                ("Launch", "/"),
+                ("Projects", reverse("project_list")),
+                (obj.project.name, reverse("project_detail", args=[obj.project.pk])),
+                ("Decisions", reverse("decision_list", args=[obj.project.pk])),
+                ("Update", None)
+            )
+        }
+
+        return render(request, "launch/decision_update.html", context=context)
+
+    if request.method == "POST":
+        obj = get_object_or_404(Decision.objects.select_related('project'), id=pk)
+        form = DecisionUpdateForm(request.POST, request.FILES, instance=obj)
+        if not form.is_valid():
+            context = {
+                "form": form,
+                "decision": obj,
+                "breadcrumbs": (
+                    ("Launch", "/"),
+                    ("Projects", reverse("project_list")),
+                    (obj.project.name, reverse("project_detail", args=[obj.project.pk])),
+                    ("Decisions", reverse("decision_list", args=[obj.project.pk])),
+                    ("Update", None)
+                )
+            }
+
+            messages.error(request, "Please correct the form errors and resubmit")
+            return render(request, "launch/decision_update.html", context=context)
+
+        form.save()
+        messages.success(request, "Decision has been updated.")
+        return HttpResponseRedirect(
+            reverse("decision_list", args=[obj.project.pk])
+        )
+
+
+@login_required
+def gap_update(request, pk):
+    if request.method == "GET":
+        obj = get_object_or_404(Gap.objects.select_related('project'), id=pk)
+
+        context = {
+            "form": GapUpdateForm(instance=obj),
+            "gap": obj,
+            "breadcrumbs": (
+                ("Launch", "/"),
+                ("Projects", reverse("project_list")),
+                (obj.project.name, reverse("project_detail", args=[obj.project.pk])),
+                ("Gaps", reverse("gap_list", args=[obj.project.pk])),
+                ("Update", None)
+            )
+        }
+
+        return render(request, "launch/gap_update.html", context=context)
+
+    if request.method == "POST":
+        obj = get_object_or_404(Gap.objects.select_related('project'), id=pk)
+        form = GapUpdateForm(request.POST, request.FILES, instance=obj)
+        if not form.is_valid():
+            context = {
+                "form": form,
+                "gap": obj,
+                "breadcrumbs": (
+                    ("Launch", "/"),
+                    ("Projects", reverse("project_list")),
+                    (obj.project.name, reverse("project_detail", args=[obj.project.pk])),
+                    ("Gaps", reverse("gap_list", args=[obj.project.pk])),
+                    ("Update", None)
+                )
+            }
+
+            messages.error(request, "Please correct the form errors and resubmit")
+            return render(request, "launch/gap_update.html", context=context)
+
+        form.save()
+        messages.success(request, "Gap has been updated.")
+        return HttpResponseRedirect(
+            reverse("gap_list", args=[obj.project.pk])
+        )
+
+
+@login_required
+def issue_detail(request, pk):
+    comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
+    obj = get_object_or_404(Issue.objects.prefetch_related(comments_prefetch), pk=pk)
+
+    context = {
+        "issue": obj,
+        "comment_form": CommentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Issue),
+                "object_id": obj.pk,
+            }
+        ),
+    }
+
+    return render(request, "launch/issue_detail.html", context=context)
+
+
+@login_required
+def decision_detail(request, pk):
+    comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
+    obj = get_object_or_404(Decision.objects.prefetch_related(comments_prefetch), pk=pk)
+
+    context = {
+        "decision": obj,
+        "comment_form": CommentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Decision),
+                "object_id": obj.pk,
+            }
+        ),
+    }
+
+    return render(request, "launch/decision_detail.html", context=context)
+
+
+@login_required
+def gap_detail(request, pk):
+    comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
+    obj = get_object_or_404(Gap.objects.prefetch_related(comments_prefetch), pk=pk)
+
+    context = {
+        "gap": obj,
+        "comment_form": CommentCreateForm(
+            initial={
+                "content_type": ContentType.objects.get_for_model(Gap),
+                "object_id": obj.pk,
+            }
+        ),
+    }
+
+    return render(request, "launch/gap_detail.html", context=context)

@@ -6,23 +6,40 @@
 
 {% block main %}
 
-  <p><a href="{% url 'risk_create' project.pk %}" up-layer="new">Create</a></p>
+  <div class="page-title-box">
+    <h4 class="page-title"><a href="{% url 'risk_create' project.pk %}" class="btn btn-success btn-sm ms-3" up-layer="new">Add New</a></h4>
+  </div>
 
-  <table class="table">
+  <table class="table table-striped">
     <thead>
     <tr>
       <th>Name</th>
-      <th>Description</th>
-      <th>Created By</th>
+      <th>Impact</th>
+      <th>Likelihood</th>
+      <th>Risk</th>
+      <th>Actions</th>
     </tr>
     </thead>
-    {% for obj in project.risks.all %}
+    <tbody>
+    {% for risk in risks %}
       <tr>
-        <td>{{ obj.name }}</td>
-        <td>{{ obj.description }}</td>
-        <td>{{ obj.created_by.email }}</td>
+        <td>
+          <a class="text-black text-decoration-underline" href="{% url 'risk_detail' risk.pk %}" up-layer="new">
+            {{ risk.name }}
+          </a>
+        </td>
+        <td>{{ risk.impact }}</td>
+        <td>{{ risk.likelihood }}</td>
+        <td>{{ risk.risk }}</td>
+        <td>
+          <a href="{% url 'risk_update' risk.pk %}">Edit</a>
+        </td>
       </tr>
     {% endfor %}
+    </tbody>
+
   </table>
+
+
 
 {% endblock %}

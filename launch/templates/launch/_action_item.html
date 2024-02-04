@@ -10,7 +10,7 @@
       {% if action.assigned_to %}
       <div id="tooltip-container">
         <img src="{% static 'hyper/assets/images/users/avatar-1.jpg' %}" alt="image" class="avatar-xs rounded-circle me-1"
-             data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to {{ action.assigned_to }}"/>
+             data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to {{ action.assigned_to.email }}"/>
       </div>
       {% else %}
         <div>

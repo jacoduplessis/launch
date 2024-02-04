@@ -1,0 +1,13 @@
+<main>
+  <h2>{{ decision.name}}</h2>
+  <hr>
+
+  <h4>Description</h4>
+  <div>{{ decision.description|linebreaks }}</div>
+
+  <h4>Next Steps</h4>
+  <div>{{ decision.next_steps|linebreaks }}</div>
+
+  {% url 'decision_detail' decision.pk as next_url %}
+  {% include "launch/_comments.html" with comment_form=comment_form comments=decision.comments.all next_url=next_url %}
+</main>
