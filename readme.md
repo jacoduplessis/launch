@@ -19,4 +19,4 @@
 
 ## todo
 
-increase menu and other dark areas font colour contrast
+- user avatar management (looks good for demo's)

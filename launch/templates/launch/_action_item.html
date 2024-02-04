@@ -7,9 +7,18 @@
   </div> <!-- end col -->
   <div class="col-sm-6">
     <div class="d-flex justify-content-between">
+      {% if action.assigned_to %}
       <div id="tooltip-container">
-        <img src="{% static 'hyper/assets/images/users/avatar-9.jpg' %}" alt="image" class="avatar-xs rounded-circle me-1"
-             data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to Arya S"/>
+        <img src="{% static 'hyper/assets/images/users/avatar-1.jpg' %}" alt="image" class="avatar-xs rounded-circle me-1"
+             data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to {{ action.assigned_to }}"/>
+      </div>
+      {% else %}
+        <div>
+        Unassigned
+        </div>
+      {% endif %}
+      <div>
+        <a href="{% url 'action_update' action.pk %}">Edit</a>
       </div>
       <div>
         <ul class="list-inline font-13 text-end">

@@ -9,15 +9,14 @@ from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
 from django.contrib.auth.views import LoginView as BaseLoginView, LogoutView as BaseLogoutView
-from django.template.defaulttags import lorem
 from django.urls import reverse
 from django.contrib import messages
 from django.utils.lorem_ipsum import paragraphs, words
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
-from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm, AttachmentCreateForm
-from launch.models import Project, OrganisationMembership, Action, Comment, Attachment
+from launch.forms import ProjectCreateForm, ActionCreateForm, CommentCreateForm, AttachmentCreateForm, ProjectUpdateForm, ProjectImageForm, RiskCreateForm, IssueCreateForm, DecisionCreateForm, GapCreateForm, ProjectMembershipCreateForm, ProjectMembershipUpdateForm, ActionUpdateForm
+from launch.models import Project, OrganisationMembership, Action, Comment, Attachment, Issue, Decision, Gap, ProjectMembership
 
 
 class LoginView(BaseLoginView):
@@ -31,6 +30,8 @@ class LogoutView(BaseLogoutView):
 
 @login_required
 def project_list(request):
+    members_prefetch = Prefetch("members", queryset=ProjectMembership.objects.select_related("user"))
+
     context = {
         "breadcrumbs": (
             ("Launch", "/"),
@@ -41,7 +42,7 @@ def project_list(request):
             num_actions=Count("actions", distinct=True),
             num_comments=Count("comments", distinct=True),
             num_attachments=Count("attachments", distinct=True),
-        )
+        ).prefetch_related(members_prefetch)
     }
     return render(request, template_name="launch/project_list.html", context=context)
 
@@ -107,7 +108,8 @@ def project_detail(request, pk):
         queryset=Attachment.objects.select_related("created_by")
     )
 
-    qs = Project.objects.prefetch_related(comments_prefetch, attachments_prefetch)
+    members_prefetch = Prefetch("members", queryset=ProjectMembership.objects.select_related("user"))
+    qs = Project.objects.prefetch_related(comments_prefetch, attachments_prefetch, members_prefetch)
     project = get_object_or_404(qs, pk=pk)
     context = {
         "project": project,
@@ -127,9 +129,147 @@ def project_detail(request, pk):
                 "content_type": ContentType.objects.get_for_model(Project),
                 "object_id": project.pk,
             }
-        )
+        ),
+        "image_form": ProjectImageForm()
     }
     return render(request, "launch/project_detail.html", context)
+
+
+@login_required
+def project_update(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+
+    if request.method == "GET":
+        context = {
+            "form": ProjectUpdateForm(instance=project),
+            "project": project,
+        }
+
+        return render(request, "launch/project_update.html", context)
+
+    if request.method == "POST":
+
+        form = ProjectUpdateForm(request.POST, request.FILES, instance=project)
+        if not form.is_valid():
+            context = {"form": form, "project": project}
+            return render(request, "launch/project_update.html", context)
+        form.save()
+        messages.success(request, "Project updated.")
+        return HttpResponseRedirect(
+            reverse("project_detail", args=[project.pk])
+        )
+
+
+@require_POST
+@login_required
+def project_image(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+
+    form = ProjectImageForm(request.POST, request.FILES, instance=project)
+    if not form.is_valid():
+        messages.error(request, "Error processing image.")
+    else:
+        form.save()
+    return HttpResponseRedirect(
+        reverse("project_detail", args=[project.pk])
+    )
+
+
+@login_required
+def project_members(request, pk):
+
+    if request.method == "GET":
+        members_prefetch = Prefetch("members", queryset=ProjectMembership.objects.select_related("user"))
+
+        project = get_object_or_404(Project.objects.prefetch_related(members_prefetch), pk=pk)
+
+        context = {
+            "project": project,
+            "form": ProjectMembershipCreateForm(),
+            "breadcrumbs": (
+                ("Launch", "/"),
+                ("Projects", reverse("project_list")),
+                (project.name, reverse("project_detail", args=[project.pk])),
+                ("Members", None)
+            ),
+        }
+
+        return render(request, "launch/project_members.html", context=context)
+
+    if request.method == "POST":
+
+        project = get_object_or_404(Project, id=pk)
+
+        form = ProjectMembershipCreateForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            context = {
+                "project": project,
+                "form": form,
+                "breadcrumbs": (
+                    ("Launch", "/"),
+                    ("Projects", reverse("project_list")),
+                    (project.name, reverse("project_detail", args=[project.pk])),
+                    ("Members", None)
+                ),
+            }
+            return render(request, "launch/project_members.html", context=context)
+
+        membership = form.save(project.pk, request.user)
+        messages.success(request, "User has been added to project.")
+        return HttpResponseRedirect(
+            reverse("project_members", args=[project.pk])
+        )
+
+
+@login_required
+def membership_update(request, pk):
+    membership = get_object_or_404(ProjectMembership.objects.select_related("user", "project"), id=pk)
+
+    if request.method == "GET":
+        context = {
+            "membership": membership,
+            "form": ProjectMembershipUpdateForm(instance=membership)
+        }
+
+        return render(request, "launch/membership_update.html", context=context)
+
+    if request.method == "POST":
+        form = ProjectMembershipUpdateForm(request.POST, request.FILES, instance=membership)
+
+        if not form.is_valid():
+            context = {
+                "membership": membership,
+                "form": form,
+            }
+            return render(request, "launch/membership_update.html", context=context)
+
+        membership = form.save()
+        messages.success(request, "Membership has been updated.")
+        return HttpResponseRedirect(
+            reverse("membership_update", args=[membership.pk])
+        )
+
+
+@login_required
+def membership_delete(request, pk):
+    membership = get_object_or_404(ProjectMembership.objects.select_related("user", "project"), id=pk)
+
+    if request.method == "GET":
+        context = {
+            "membership": membership,
+        }
+
+        return render(request, "launch/membership_delete.html", context=context)
+
+    if request.method == "POST":
+        project_id = membership.project_id
+
+        membership.delete()
+        messages.success(request, "Membership has been deleted.")
+        return HttpResponseRedirect(
+            reverse("project_members", args=[project_id])
+        )
 
 
 @login_required
@@ -206,6 +346,52 @@ def action_create(request, pk):
 
 
 @login_required
+def action_update(request, pk):
+
+    if request.method == "GET":
+
+        action = get_object_or_404(Action.objects.select_related('project'), id=pk)
+
+        context = {
+            "form": ActionUpdateForm(instance=action),
+            "action": action,
+             "breadcrumbs": (
+                ("Launch", "/"),
+                ("Projects", reverse("project_list")),
+                (action.project.name, reverse("project_detail", args=[action.project.pk])),
+                ("Actions", reverse("action_list", args=[action.project.pk])),
+                ("Update", None)
+            )
+        }
+
+        return render(request, "launch/action_update.html", context=context)
+
+    if request.method == "POST":
+        action = get_object_or_404(Action.objects.select_related('project'), id=pk)
+        form = ActionUpdateForm(request.POST, request.FILES, instance=action)
+        if not form.is_valid():
+            context = {
+                "form": form,
+                "action": action,
+                "breadcrumbs": (
+                    ("Launch", "/"),
+                    ("Projects", reverse("project_list")),
+                    (action.project.name, reverse("project_detail", args=[action.project.pk])),
+                    ("Actions", reverse("action_list", args=[action.project.pk])),
+                    ("Update", None)
+                )
+            }
+
+            messages.error(request, "Please correct the form errors and resubmit")
+            return render(request, "launch/action_update.html", context=context)
+
+        form.save()
+        messages.success(request, "Action has been updated.")
+        return HttpResponseRedirect(
+            reverse("action_list", args=[action.project.pk])
+        )
+
+@login_required
 def action_detail(request, pk):
     comments_prefetch = Prefetch("comments", Comment.objects.order_by("time_created"))
     action = get_object_or_404(Action.objects.prefetch_related(comments_prefetch), pk=pk)
@@ -254,7 +440,7 @@ def attachment_create(request):
     uploaded_file = request.FILES['file']
     attachment.size = uploaded_file.size
     mime_type, encoding = mimetypes.guess_type(uploaded_file.name)
-    attachment.mime_type = mime_type
+    attachment.mime_type = mime_type or ""
     attachment.created_by = request.user
     attachment.save()
 
@@ -263,3 +449,208 @@ def attachment_create(request):
         return HttpResponseRedirect(next_url)
 
     return HttpResponse("OK")
+
+
+@login_required()
+def risk_list(request, pk):
+    project = get_object_or_404(Project.objects.prefetch_related("risks"), pk=pk)
+
+    context = {
+        "project": project,
+        "breadcrumbs": (
+            ("Launch", "/"),
+            ("Projects", reverse("project_list")),
+            (project.name, reverse("project_detail", args=[project.pk])),
+            ("Risks", None)
+        )
+    }
+
+    return render(request, "launch/risk_list.html", context=context)
+
+
+@login_required()
+def issue_list(request, pk):
+    issues_prefetch = Prefetch("issues", Issue.objects.select_related("created_by"))
+
+    project = get_object_or_404(Project.objects.prefetch_related(issues_prefetch), pk=pk)
+
+    context = {
+        "project": project,
+        "breadcrumbs": (
+            ("Launch", "/"),
+            ("Projects", reverse("project_list")),
+            (project.name, reverse("project_detail", args=[project.pk])),
+            ("Issues", None)
+        )
+    }
+
+    return render(request, "launch/issue_list.html", context=context)
+
+
+@login_required()
+def decision_list(request, pk):
+    decisions_prefetch = Prefetch("decisions", Decision.objects.select_related("created_by"))
+
+    project = get_object_or_404(Project.objects.prefetch_related(decisions_prefetch), pk=pk)
+
+    context = {
+        "project": project,
+        "breadcrumbs": (
+            ("Launch", "/"),
+            ("Projects", reverse("project_list")),
+            (project.name, reverse("project_detail", args=[project.pk])),
+            ("Decisions", None)
+        )
+    }
+
+    return render(request, "launch/decision_list.html", context=context)
+
+
+@login_required()
+def gap_list(request, pk):
+    gaps_prefetch = Prefetch("gaps", Gap.objects.select_related("created_by"))
+    project = get_object_or_404(Project.objects.prefetch_related(gaps_prefetch), pk=pk)
+
+    context = {
+        "project": project,
+        "breadcrumbs": (
+            ("Launch", "/"),
+            ("Projects", reverse("project_list")),
+            (project.name, reverse("project_detail", args=[project.pk])),
+            ("Gaps", None)
+        )
+    }
+
+    return render(request, "launch/gap_list.html", context=context)
+
+
+@login_required()
+def risk_create(request, pk):
+    project = get_object_or_404(Project.objects.all(), pk=pk)
+
+    context = {}
+
+    if request.method == "GET":
+        context["form"] = RiskCreateForm(
+            initial={
+                "name": words(count=6, common=False),
+                "description": "\n\n".join(paragraphs(count=4, common=False)),
+            }
+        )
+        return render(request, "launch/create.html", context=context)
+
+    if request.method == "POST":
+        form = RiskCreateForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            context["form"] = form
+            return render(request, "launch/create.html", context=context)
+
+        obj = form.save(commit=False)
+        obj.created_by = request.user
+        obj.project = project
+        obj.save()
+
+        messages.success(request, "Risk has been created.")
+        return HttpResponseRedirect(
+            reverse("risk_list", args=[project.pk])
+        )
+
+
+@login_required()
+def issue_create(request, pk):
+    project = get_object_or_404(Project.objects.all(), pk=pk)
+
+    context = {}
+
+    if request.method == "GET":
+        context["form"] = IssueCreateForm(
+            initial={
+                "name": words(count=6, common=False),
+                "description": "\n\n".join(paragraphs(count=4, common=False)),
+            }
+        )
+        return render(request, "launch/create.html", context=context)
+
+    if request.method == "POST":
+        form = IssueCreateForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            context["form"] = form
+            return render(request, "launch/create.html", context=context)
+
+        obj = form.save(commit=False)
+        obj.created_by = request.user
+        obj.project = project
+        obj.save()
+
+        messages.success(request, "Issue has been created.")
+        return HttpResponseRedirect(
+            reverse("issue_list", args=[project.pk])
+        )
+
+
+@login_required()
+def decision_create(request, pk):
+    project = get_object_or_404(Project.objects.all(), pk=pk)
+
+    context = {}
+
+    if request.method == "GET":
+        context["form"] = DecisionCreateForm(
+            initial={
+                "name": words(count=6, common=False),
+                "description": "\n\n".join(paragraphs(count=4, common=False)),
+            }
+        )
+        return render(request, "launch/create.html", context=context)
+
+    if request.method == "POST":
+        form = DecisionCreateForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            context["form"] = form
+            return render(request, "launch/create.html", context=context)
+
+        obj = form.save(commit=False)
+        obj.created_by = request.user
+        obj.project = project
+        obj.save()
+
+        messages.success(request, "Decision has been created.")
+        return HttpResponseRedirect(
+            reverse("decision_list", args=[project.pk])
+        )
+
+
+@login_required()
+def gap_create(request, pk):
+    project = get_object_or_404(Project.objects.all(), pk=pk)
+
+    context = {}
+
+    if request.method == "GET":
+        context["form"] = GapCreateForm(
+            initial={
+                "name": words(count=6, common=False),
+                "description": "\n\n".join(paragraphs(count=4, common=False)),
+            }
+        )
+        return render(request, "launch/create.html", context=context)
+
+    if request.method == "POST":
+        form = GapCreateForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            context["form"] = form
+            return render(request, "launch/create.html", context=context)
+
+        obj = form.save(commit=False)
+        obj.created_by = request.user
+        obj.project = project
+        obj.save()
+
+        messages.success(request, "Gap has been created.")
+        return HttpResponseRedirect(
+            reverse("gap_list", args=[project.pk])
+        )

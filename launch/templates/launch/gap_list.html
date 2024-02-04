@@ -1,0 +1,28 @@
+{% extends "launch/base_dashboard.html" %}
+
+{% load static %}
+
+{% block page_title %}Gaps{% endblock %}
+
+{% block main %}
+
+    <p><a href="{% url 'gap_create' project.pk %}" up-layer="new">Create</a></p>
+  
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Created By</th>
+    </tr>
+  </thead>
+  {% for obj in project.gaps.all %}
+    <tr>
+      <td>{{ obj.name }}</td>
+      <td>{{ obj.description }}</td>
+      <td>{{ obj.created_by.email }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

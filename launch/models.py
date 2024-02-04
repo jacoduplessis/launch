@@ -5,6 +5,14 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 
+ONE_TO_FIVE = (
+    (1, "1"),
+    (2, "2"),
+    (3, "3"),
+    (4, "4"),
+    (5, "5"),
+)
+
 
 class OrganisationMembership(models.Model):
     ADMIN = 'admin'
@@ -51,6 +59,7 @@ class ProjectMembership(models.Model):
     role = models.CharField(max_length=100, choices=ROLE_CHOICES, default=MEMBER)
     time_created = models.DateTimeField(auto_now_add=True)
     time_modified = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class Project(models.Model):
@@ -68,6 +77,16 @@ class Project(models.Model):
 
     attachments = GenericRelation('Attachment')
     comments = GenericRelation('Comment')
+
+    image = models.ImageField(upload_to="projects/", blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def duration_days(self):
+        if not (self.start_date and self.end_date):
+            return None
+        return (self.end_date - self.start_date).days
 
 
 class Attachment(models.Model):
@@ -132,3 +151,46 @@ class Action(models.Model):
 
     def __str__(self):
         return f"{self.project_id} {self.name}"
+
+
+class Risk(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="risks")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_modified = models.DateTimeField(auto_now=True)
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    mitigation = models.TextField(blank=True)
+    impact = models.PositiveIntegerField(choices=ONE_TO_FIVE)
+    likelihood = models.PositiveIntegerField(choices=ONE_TO_FIVE)
+
+
+class Issue(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="issues")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_modified = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    impact = models.PositiveIntegerField(choices=ONE_TO_FIVE)
+
+
+class Decision(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="decisions")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_modified = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    next_steps = models.TextField(blank=True)
+
+
+class Gap(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="gaps")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_modified = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    mitigation = models.TextField(blank=True)

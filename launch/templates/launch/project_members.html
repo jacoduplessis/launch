@@ -1,0 +1,52 @@
+{% extends "launch/base_dashboard.html" %}
+{% load static thumbnail %}
+
+{% load crispy_forms_filters %}
+
+{% block page_title %}Members of {{ project.name }}{% endblock %}
+
+{% block main %}
+
+  <div class="row">
+    <div class="col-xxl-8 col-lg-6">
+      <!-- project card -->
+      <div class="card d-block">
+        <div class="card-body">
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in project.members.all %}
+
+                <tr>
+                  <td>{{ member.user.email }}</td>
+                  <td>{{ member.role }}</td>
+                  <td><a href="{% url 'membership_update' member.pk %}">Edit</a> &middot; <a href="{% url 'membership_delete' member.pk %}">Remove</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <h4>Add Member</h4>
+          <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type="submit" class="btn btn-primary" value="Submit">
+            <a class="btn btn-secondary" href="{% url 'project_detail' project.pk %}">Back to Project</a>
+
+          </form>
+
+        </div> <!-- end card-body-->
+
+      </div> <!-- end card-->
+      <!-- end card-->
+    </div>
+
+  </div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "launch/base_dashboard.html" %}
+
+{% load static %}
+
+{% block page_title %}Actions{% endblock %}
+
+{% block main %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Created By</th>
+    </tr>
+  </thead>
+  {% for obj in project.risks.all %}
+    <tr>
+      <td>{{ obj.name }}</td>
+      <td>{{ obj.description }}</td>
+      <td>{{ obj.created_by.email }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

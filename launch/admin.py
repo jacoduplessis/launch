@@ -8,8 +8,14 @@ admin.site.index_title = "Administration"
 
 admin.site.unregister(Group)
 
+
 @admin.register(Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
     list_display = [
         "name",
+        "created_by",
+        "time_created",
     ]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("created_by")

@@ -1,19 +1,3 @@
-"""
-URL configuration for launch project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -28,9 +12,23 @@ urlpatterns = [
     path("project-create/", views.project_create, name="project_create"),
     path("projects/", views.project_list, name="project_list"),
     path("projects/<int:pk>/", views.project_detail, name="project_detail"),
+    path("projects/<int:pk>/update/", views.project_update, name="project_update"),
+    path("projects/<int:pk>/image/", views.project_image, name="project_image"),
     path("projects/<int:pk>/actions/", views.action_list, name="action_list"),
+    path("projects/<int:pk>/risks/", views.risk_list, name="risk_list"),
+    path("projects/<int:pk>/issues/", views.issue_list, name="issue_list"),
+    path("projects/<int:pk>/decisions/", views.decision_list, name="decision_list"),
+    path("projects/<int:pk>/gaps/", views.gap_list, name="gap_list"),
+    path("projects/<int:pk>/members/", views.project_members, name="project_members"),
     path("projects/<int:pk>/actions/create/", views.action_create, name="action_create"),
+    path("projects/<int:pk>/risks/create/", views.risk_create, name="risk_create"),
+    path("projects/<int:pk>/issues/create/", views.issue_create, name="issue_create"),
+    path("projects/<int:pk>/decisions/create/", views.decision_create, name="decision_create"),
+    path("projects/<int:pk>/gaps/create/", views.gap_create, name="gap_create"),
     path("actions/<int:pk>/", views.action_detail, name="action_detail"),
+    path("actions/<int:pk>/update/", views.action_update, name="action_update"),
+    path("membership/<int:pk>/update/", views.membership_update, name="membership_update"),
+    path("membership/<int:pk>/delete/", views.membership_delete, name="membership_delete"),
     path("comment-create/", views.comment_create, name="comment_create"),
     path("attachment-create/", views.attachment_create, name="attachment_create"),
     path("", views.index, name="index"),

@@ -1,0 +1,14 @@
+{% load crispy_forms_filters %}
+
+{% include "launch/_messages.html" %}
+
+<main>
+  <h2>Update Project</h2>
+  <hr>
+
+  <form method="post" enctype="multipart/form-data" action="{% url 'project_update' project.pk %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" value="Submit" class="btn btn-primary">
+  </form>
+</main>

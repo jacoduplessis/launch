@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "launch",
     "crispy_forms",
     "crispy_bootstrap5",
+    "sorl.thumbnail",
 ]
 
 MIDDLEWARE = [
