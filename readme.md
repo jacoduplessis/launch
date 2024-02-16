@@ -1,5 +1,19 @@
 # Launch MVP
 
+## Setup
+
+```
+python3.12 -m venv venv
+source venv/bin/activate
+pip install -U pip
+pip install -r requirements_dev.txt
+
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+
 ## Notes
 
 - orgs are created in admin
@@ -19,4 +33,4 @@
 
 ## todo
 
-- user avatar management (looks good for demo's)
+- user avatar management (looks good for demos)
